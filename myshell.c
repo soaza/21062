@@ -112,17 +112,20 @@ static void command_fg(/* pass necessary parameters*/) {
  * Program Execution
  ******************************************************************************/
 
-static void command_exec(/* pass necessary parameters*/) {
+static void command_exec(char program[],char *args[],int args_count) {
 
         /******* FILL IN THE CODE *******/
 
 
     // check if program exists and is executable : use access()
-
+    
+    // if not executable
+    if (access(program, F_OK | R_OK) == -1) {
+        printf("%s not found\n",program);
+    }
     // fork a subprocess and execute the program
-
-    pid_t pid;
-    if ((pid = fork()) == 0) {
+    pid_t pid = fork();
+    if (pid == 0) {
         // CHILD PROCESS
 
 
@@ -134,24 +137,36 @@ static void command_exec(/* pass necessary parameters*/) {
             // call execv() to execute the command in the child process
 
         // else : ex1, ex2 
-            // call execv() to execute the command in the child process
+        // call execv() to execute the command in the child process
+        // execv(program,args);
+        execv("/bin/ls",args);
+        printf("HIII\n");
+        for (int i = 0; i < args_count; i++){
+            printf("args: %s\n", args[i]);
+        }
 
         // Exit the child
+        exit(0);
 
 
     } else {
-
 
         // PARENT PROCESS
         // register the process in process table
 
         // If  child process need to execute in the background  (if & is present at the end )
-            //print Child [PID] in background
+        //print Child [PID] in background
 
-        // else wait for the child process to exit 
+        // else wait for the child process to exit
+        int status; 
+        waitpid(pid, &status,0);
         
         // Use waitpid() with WNOHANG when not blocking during wait and  waitpid() with WUNTRACED when parent needs to block due to wait 
-
+        while (waitpid(pid, &status, WNOHANG) == 0) {
+            // Child process is still running
+            printf("Child process still running\n");
+            sleep(1);
+        }
 
     }
 }
@@ -160,10 +175,15 @@ static void command_exec(/* pass necessary parameters*/) {
  * Command Processor
  ******************************************************************************/
 
-static void command(/* pass necessary parameters*/) {
+static void command(char command_str[],char *args[],int args_count) {
 
 
-        /******* FILL IN THE CODE *******/
+    /******* FILL IN THE CODE *******/
+    // printf("command %s\n",command_str);
+    // for (int i = 0; i < args_count; i++)
+    // {
+    //     printf("args: %s\n", args[i]);
+    // }
     
     // if command is "info" call command_info()             : ex1
     // if command is "wait" call command_wait()             : ex2
@@ -171,7 +191,17 @@ static void command(/* pass necessary parameters*/) {
     // if command is "fg" call command_fg()                 : ex4
 
     // call command_exec() for all other commands           : ex1, ex2, ex3
+    if(strcmp(command_str,"info") == 0 ){
 
+    } else if (strcmp(command_str,"wait") == 0){
+
+    } else if (strcmp(command_str,"terminate") == 0){
+        
+    } else if (strcmp(command_str,"fg") == 0){
+        
+    } else{
+        command_exec(command_str,args,args_count);
+    }
 
 }
 
@@ -198,10 +228,34 @@ void my_process_command(size_t num_tokens, char **tokens) {
         // Split tokens at NULL or ; to get a single command (ex1, ex2, ex3, ex4(fg command))
 
         // for example :  /bin/ls ; /bin/sleep 5 ; /bin/pwd
-        // split the above line as first command : /bin/ls , second command: /bin/pwd  and third command:  /bin/pwd
+        // split the above line as first command : /bin/ls , second command: /bin/sleep 5 and third command:  /bin/pwd
         // Call command() and pass each individual command as arguements
+        size_t i;
+        char *token, *temp="", *delimiters = ";";
+        char *first_cmd_token="";
+        char *args[] = {};
+        int args_count = 0; 
 
+        for (i = 0; i < num_tokens; i++) {
+            token = tokens[i];
 
+            if(token == NULL || strcmp(token, ";") == 0 ){
+                command(first_cmd_token,args,args_count);
+                // reset args and token
+                for (int i = 0; i < args_count; i++){
+                    args[i] = "";
+                }
+                args_count = 0;
+                first_cmd_token = "";
+            } else{
+                if(!strcmp(first_cmd_token, "") == 0){
+                    args[args_count++] = token;
+                } else {
+                    first_cmd_token = token;
+                }
+            }
+        }
+        
 }
 
 void my_quit(void) {
