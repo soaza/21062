@@ -239,7 +239,7 @@ void my_process_command(size_t num_tokens, char **tokens) {
                 args[args_count++] = NULL;
                 command(first_cmd_token,args,args_count);
                 // reset args and token
-                memset(args, '\0', args_count); // set all elements to null character ('\0')
+                memset(args, '\0', sizeof(args)); // set all elements to null character ('\0')
 
                 // reset args and token
                 args_count = 0;
