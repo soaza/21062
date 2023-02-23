@@ -19,6 +19,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+struct PCBTable process_table[100];
+int num_processes= 0;
 
 /*******************************************************************************
  * Signal handler : ex4
@@ -112,7 +114,7 @@ static void command_fg(/* pass necessary parameters*/) {
  * Program Execution
  ******************************************************************************/
 
-static void command_exec(char program[],char *args[],int args_count) {
+static void command_exec(char program[],char *args[],int args_count,bool background_task) {
 
         /******* FILL IN THE CODE *******/
 
@@ -149,13 +151,22 @@ static void command_exec(char program[],char *args[],int args_count) {
 
         // PARENT PROCESS
         // register the process in process table
+        struct PCBTable new_process = {pid,2,-1};
+        process_table[num_processes++] = new_process;
 
         // If  child process need to execute in the background  (if & is present at the end )
         //print Child [PID] in background
+        if(background_task){
+            printf("Child [%d] in background\n",pid);
+        }
 
         // else wait for the child process to exit
         int status; 
-        waitpid(pid, &status,WUNTRACED);
+        if (background_task){
+            waitpid(pid, &status,WNOHANG);
+        } else{   
+            waitpid(pid, &status,WUNTRACED);
+        }
         
         // Use waitpid() with WNOHANG when not blocking during wait and  waitpid() with WUNTRACED when parent needs to block due to wait 
         // while (waitpid(pid, &status, WNOHANG) == 0) {
@@ -171,7 +182,7 @@ static void command_exec(char program[],char *args[],int args_count) {
  * Command Processor
  ******************************************************************************/
 
-static void command(char command_str[],char *args[],int args_count) {
+static void command(char command_str[],char *args[],int args_count,bool background_task) {
 
 
     /******* FILL IN THE CODE *******/
@@ -196,7 +207,7 @@ static void command(char command_str[],char *args[],int args_count) {
     } else if (strcmp(command_str,"fg") == 0){
         
     } else{
-        command_exec(command_str,args,args_count);
+        command_exec(command_str,args,args_count,background_task);
     }
 
 }
@@ -218,7 +229,6 @@ void my_init(void) {
 
 void my_process_command(size_t num_tokens, char **tokens) {
 
-
         /******* FILL IN THE CODE *******/
 
         // Split tokens at NULL or ; to get a single command (ex1, ex2, ex3, ex4(fg command))
@@ -235,9 +245,14 @@ void my_process_command(size_t num_tokens, char **tokens) {
         for (i = 0; i < num_tokens; i++) {
             token = tokens[i];
 
-            if(token == NULL || strcmp(token, ";") == 0 ){
+            if(token == NULL || strcmp(token, ";") == 0 || strcmp(token, "&") == 0 ){
+
                 args[args_count++] = NULL;
-                command(first_cmd_token,args,args_count);
+                if(strcmp(token, "&") == 0){
+                    command(first_cmd_token,args,args_count,true);
+                } else {
+                    command(first_cmd_token,args,args_count,false);
+                }
                 // reset args and token
                 memset(args, '\0', sizeof(args)); // set all elements to null character ('\0')
 
