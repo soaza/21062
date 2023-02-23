@@ -140,8 +140,6 @@ static void command_exec(char program[],char *args[],int args_count) {
         // else : ex1, ex2 
         // call execv() to execute the command in the child process
         execv(program,args);
-        printf("HELO \n");
-        printf("%d",args_count);
 
         // Exit the child
         exit(0);
@@ -157,14 +155,14 @@ static void command_exec(char program[],char *args[],int args_count) {
 
         // else wait for the child process to exit
         int status; 
-        waitpid(pid, &status,0);
+        waitpid(pid, &status,WUNTRACED);
         
         // Use waitpid() with WNOHANG when not blocking during wait and  waitpid() with WUNTRACED when parent needs to block due to wait 
-        while (waitpid(pid, &status, WNOHANG) == 0) {
-            // Child process is still running
-            printf("Child process still running\n");
-            sleep(1);
-        }
+        // while (waitpid(pid, &status, WNOHANG) == 0) {
+        //     // Child process is still running
+        //     printf("Child process still running\n");
+        //     sleep(1);
+        // }
 
     }
 }
