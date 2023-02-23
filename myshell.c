@@ -247,6 +247,7 @@ void my_process_command(size_t num_tokens, char **tokens) {
                 args_count = 0;
                 first_cmd_token = "";
             } else{
+                printf("HERED");
                 if(!strcmp(first_cmd_token, "") == 0){
                     args[args_count++] = token;
                 } else {
