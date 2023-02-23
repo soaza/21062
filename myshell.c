@@ -228,7 +228,6 @@ void my_init(void) {
 }
 
 void my_process_command(size_t num_tokens, char **tokens) {
-
         /******* FILL IN THE CODE *******/
 
         // Split tokens at NULL or ; to get a single command (ex1, ex2, ex3, ex4(fg command))
@@ -246,12 +245,13 @@ void my_process_command(size_t num_tokens, char **tokens) {
             token = tokens[i];
 
             if(token == NULL || strcmp(token, ";") == 0 || strcmp(token, "&") == 0 ){
-
                 args[args_count++] = NULL;
-                if(strcmp(token, "&") == 0){
-                    command(first_cmd_token,args,args_count,true);
-                } else {
+
+                if(token == NULL || strcmp(token, ";") == 0){
                     command(first_cmd_token,args,args_count,false);
+                } else {
+                    command(first_cmd_token,args,args_count,true);
+                    break;
                 }
                 // reset args and token
                 memset(args, '\0', sizeof(args)); // set all elements to null character ('\0')
@@ -268,7 +268,7 @@ void my_process_command(size_t num_tokens, char **tokens) {
                 }
             }
         }
-    free(args);
+        free(args);
 }
 
 void my_quit(void) {
