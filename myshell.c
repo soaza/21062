@@ -139,8 +139,9 @@ static void command_exec(char program[],char *args[],int args_count) {
 
         // else : ex1, ex2 
         // call execv() to execute the command in the child process
-
         execv(program,args);
+        printf("HELO \n");
+        printf("%d",args_count);
 
         // Exit the child
         exit(0);
