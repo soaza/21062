@@ -254,6 +254,7 @@ void my_process_command(size_t num_tokens, char **tokens) {
                     args[args_count++] = token;
                 } else {
                     first_cmd_token = token;
+                    args[args_count++] = first_cmd_token;
                 }
             }
         }
