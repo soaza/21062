@@ -139,13 +139,8 @@ static void command_exec(char program[],char *args[],int args_count) {
 
         // else : ex1, ex2 
         // call execv() to execute the command in the child process
-        char *argv[] = {"/bin/echo", "hello", NULL};
-        execv("/bin/echo",argv);
-        // execv(program,args);
-        // printf("HIII\n");
-        for (int i = 0; i < args_count; i++){
-            printf("args: %s\n", args[i]);
-        }
+
+        execv(program,args);
 
         // Exit the child
         exit(0);
