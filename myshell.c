@@ -120,8 +120,9 @@ static void command_exec(char program[],char *args[],int args_count) {
     // check if program exists and is executable : use access()
     
     // if not executable
-    if (access(program, F_OK | R_OK) == -1) {
+    if (access(program, F_OK | X_OK) == -1) {
         printf("%s not found\n",program);
+        return;
     }
     // fork a subprocess and execute the program
     pid_t pid = fork();
@@ -138,8 +139,7 @@ static void command_exec(char program[],char *args[],int args_count) {
 
         // else : ex1, ex2 
         // call execv() to execute the command in the child process
-        // execv(program,args);
-        execv("/bin/ls",args);
+        execv(program,args);
         printf("HIII\n");
         for (int i = 0; i < args_count; i++){
             printf("args: %s\n", args[i]);
