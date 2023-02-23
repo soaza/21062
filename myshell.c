@@ -240,6 +240,7 @@ void my_process_command(size_t num_tokens, char **tokens) {
                 command(first_cmd_token,args,args_count);
                 // reset args and token
                 for (int i = 0; i < args_count; i++){
+                    printf("%d\n",i);
                     printf("args: %s\n", args[i]);
                     args[i] = "";
                 }
