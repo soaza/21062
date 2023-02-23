@@ -239,15 +239,15 @@ void my_process_command(size_t num_tokens, char **tokens) {
                 args[args_count++] = NULL;
                 command(first_cmd_token,args,args_count);
                 // reset args and token
+                 // free memory allocated to args array
                 for (int i = 0; i < args_count; i++){
-                    printf("%d\n",i);
-                    printf("args: %s\n", args[i]);
-                    args[i] = "";
+                    free(args[i]);
                 }
+                free(args);
+                // reset args and token
                 args_count = 0;
                 first_cmd_token = "";
             } else{
-                printf("HERED");
                 if(!strcmp(first_cmd_token, "") == 0){
                     args[args_count++] = token;
                 } else {
