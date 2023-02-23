@@ -238,6 +238,7 @@ void my_process_command(size_t num_tokens, char **tokens) {
             token = tokens[i];
 
             if(token == NULL || strcmp(token, ";") == 0 ){
+                args[args_count] = NULL;
                 command(first_cmd_token,args,args_count);
                 // reset args and token
                 for (int i = 0; i < args_count; i++){
