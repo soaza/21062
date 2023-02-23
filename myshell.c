@@ -229,7 +229,7 @@ void my_process_command(size_t num_tokens, char **tokens) {
         size_t i;
         char *token, *temp="", *delimiters = ";";
         char *first_cmd_token="";
-        char *args[] = {};
+        char **args = malloc(sizeof(char*) * 100);
         int args_count = 0; 
 
         for (i = 0; i < num_tokens; i++) {
@@ -253,7 +253,7 @@ void my_process_command(size_t num_tokens, char **tokens) {
                 }
             }
         }
-        
+    free(args);
 }
 
 void my_quit(void) {
