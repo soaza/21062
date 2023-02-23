@@ -1,1 +1,6 @@
 *.o
+fork-wrapper.c
+monitor.c
+programs/
+*.vscode
+*
