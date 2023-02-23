@@ -234,6 +234,7 @@ void my_process_command(size_t num_tokens, char **tokens) {
 
         for (i = 0; i < num_tokens; i++) {
             token = tokens[i];
+            printf("%d",i);
 
             if(token == NULL || strcmp(token, ";") == 0 ){
                 args[args_count++] = NULL;
