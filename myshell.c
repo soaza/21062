@@ -176,10 +176,10 @@ static void command(char command_str[],char *args[],int args_count) {
 
     /******* FILL IN THE CODE *******/
     // printf("command %s\n",command_str);
-    for (int i = 0; i < args_count; i++)
-    {
-        printf("args: %s\n", args[i]);
-    }
+    // for (int i = 0; i < args_count; i++)
+    // {
+    //     printf("args: %s\n", args[i]);
+    // }
     
     // if command is "info" call command_info()             : ex1
     // if command is "wait" call command_wait()             : ex2
@@ -234,13 +234,13 @@ void my_process_command(size_t num_tokens, char **tokens) {
 
         for (i = 0; i < num_tokens; i++) {
             token = tokens[i];
-            printf("%d",i);
 
             if(token == NULL || strcmp(token, ";") == 0 ){
                 args[args_count++] = NULL;
                 command(first_cmd_token,args,args_count);
                 // reset args and token
                 for (int i = 0; i < args_count; i++){
+                    printf("args: %s\n", args[i]);
                     args[i] = "";
                 }
                 args_count = 0;
