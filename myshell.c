@@ -122,13 +122,26 @@ static void command_info(char option) {
 
 }
 
-static void command_wait(/* pass necessary parameters*/) {
+static void command_wait(char pid_str[]) {
 
-        /******* FILL IN THE CODE *******/
-
+    /******* FILL IN THE CODE *******/
+    pid_t pid = (pid_t)atoi(pid_str);
+    int status;
 
     // Find the {PID} in the PCBTable
-    // If the process indicated by the process id is RUNNING, wait for it (can use waitpid()).
+     for (int i = 0; i < num_processes; i++) {
+        if (process_table[i].pid == pid) {
+            struct PCBTable process = process_table[i];
+            // If the process indicated by the process id is RUNNING, wait for it (can use waitpid()).
+            if(process.status == 2) {
+                waitpid(pid, &status,WUNTRACED);
+                process_table[i].status = 1;
+                process_table[i].exitCode = status;
+            } else{
+
+            }      
+        }
+    }
     // After the process terminate, update status and exit code (call proc_update_status())
     // Else, continue accepting user commands.
 
@@ -250,7 +263,12 @@ static void command(char command_str[],char *args[],int args_count,bool backgrou
             return;
         }
         command_info(*args[1]);
+
     } else if (strcmp(command_str,"wait") == 0){
+        if(args_count <= 2){
+            return;
+        }
+        command_wait(args[1]);
 
     } else if (strcmp(command_str,"terminate") == 0){
         
