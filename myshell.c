@@ -323,10 +323,14 @@ void my_process_command(size_t num_tokens, char **tokens) {
 
 void my_quit(void) {
 
-
     /******* FILL IN THE CODE *******/
     // Kill every process in the PCB that is either stopped or running
-
+    for (int i = 0; i < num_processes; i++) {
+        if (process_table[i].status == 2) {
+            printf("Killing [%d]\n", process_table[i].pid);
+            kill(process_table[i].pid, SIGTERM);
+        }
+    }
 
 
     printf("\nGoodbye\n");
