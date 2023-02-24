@@ -52,24 +52,72 @@ static void proc_update_status(/* pass necessary parameters*/) {
  * Built-in Commands
  ******************************************************************************/
 
-static void command_info(/* pass necessary parameters*/) {
-
+static void command_info(char option) {
         /******* FILL IN THE CODE *******/
 
+    pid_t pid;
+    int status;
+    // Check for terminated child processes
+    while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+        for (int i = 0; i < num_processes; i++) {
+            if (process_table[i].pid == pid) {
+                process_table[i].status = 1;
+                process_table[i].exitCode = status;
+                break;
+            }
+        }
+    }
 
+    if(option == '0'){
     // If option is 0
         //Print details of all processes in the order in which they were run. You will need to print their process IDs, their current status (Exited, Running, Terminating, Stopped)
         // For Exited processes, print their exit codes.
-    // If option is 1
-        //Print the number of exited process.
-    // If option is 2
-        //Print the number of running process.
-    // If option is 3
-        //Print the number of terminating process.
-    // If option is 4
-        //Print the number of stopped process.
+        for (int i = 0; i < num_processes; i++) {
+            pid_t pid = process_table[i].pid;
+            int status = process_table[i].status;
+            int exitCode = process_table[i].exitCode;
 
+            if(process_table[i].status == 1) {
+                printf("[%d] Exited %d\n",pid,exitCode);
+            } else if(process_table[i].status == 2) {
+                printf("[%d] Running\n",pid);
+            }
+        }
+    }
+    // If option is 1
+    else if(option == '1'){
+        //Print the number of exited process.
+        int num_exited_processes= 0;
+        for (int i = 0; i < num_processes; i++) {
+            if(process_table[i].status == 1) {
+                num_exited_processes += 1;
+            }
+        }
+        printf("Total exited process: %d\n", num_exited_processes);
+    }
+    // If option is 2
+    else if(option == '2'){
+        //Print the number of running process.
+        int num_running_processes= 0;
+        for (int i = 0; i < num_processes; i++) {
+            if(process_table[i].status == 2) {
+                num_running_processes += 1;
+            }
+        }
+        printf("Total running process: %d\n", num_running_processes);
+    }
+    // If option is 3
+    else if(option == '3'){
+        //Print the number of terminating process.
+    }
+    // If option is 4
+    else if(option == '4'){
+        //Print the number of stopped process.
+    }
     //For all other cases print “Wrong command” to stderr.
+    else {
+        printf("Wrong command\n");
+    }
 
 
 }
@@ -126,8 +174,11 @@ static void command_exec(char program[],char *args[],int args_count,bool backgro
         printf("%s not found\n",program);
         return;
     }
+
     // fork a subprocess and execute the program
     pid_t pid = fork();
+    struct PCBTable new_process = {pid,2,-1};
+    int process_index = num_processes;
     if (pid == 0) {
         // CHILD PROCESS
 
@@ -144,14 +195,13 @@ static void command_exec(char program[],char *args[],int args_count,bool backgro
         execv(program,args);
 
         // Exit the child
+        printf("HII");
         exit(0);
-
 
     } else {
 
         // PARENT PROCESS
         // register the process in process table
-        struct PCBTable new_process = {pid,2,-1};
         process_table[num_processes++] = new_process;
 
         // If  child process need to execute in the background  (if & is present at the end )
@@ -162,18 +212,15 @@ static void command_exec(char program[],char *args[],int args_count,bool backgro
 
         // else wait for the child process to exit
         int status; 
+
+        // Use waitpid() with WNOHANG when not blocking during wait and  waitpid() with WUNTRACED when parent needs to block due to wait 
         if (background_task){
             waitpid(pid, &status,WNOHANG);
         } else{   
             waitpid(pid, &status,WUNTRACED);
+            process_table[process_index].status = 1;
+            process_table[process_index].exitCode = status;
         }
-        
-        // Use waitpid() with WNOHANG when not blocking during wait and  waitpid() with WUNTRACED when parent needs to block due to wait 
-        // while (waitpid(pid, &status, WNOHANG) == 0) {
-        //     // Child process is still running
-        //     printf("Child process still running\n");
-        //     sleep(1);
-        // }
 
     }
 }
@@ -199,7 +246,10 @@ static void command(char command_str[],char *args[],int args_count,bool backgrou
 
     // call command_exec() for all other commands           : ex1, ex2, ex3
     if(strcmp(command_str,"info") == 0 ){
-
+        if(args_count <= 2){
+            return;
+        }
+        command_info(*args[1]);
     } else if (strcmp(command_str,"wait") == 0){
 
     } else if (strcmp(command_str,"terminate") == 0){
