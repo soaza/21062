@@ -81,6 +81,8 @@ static void command_info(char option) {
                 printf("[%d] Exited %d\n",pid,exitCode);
             } else if(process_table[i].status == 2) {
                 printf("[%d] Running\n",pid);
+            } else if(process_table[i].status == 3) {
+                printf("[%d] Terminating\n",pid);
             }
         }
     }
@@ -109,6 +111,13 @@ static void command_info(char option) {
     // If option is 3
     else if(option == '3'){
         //Print the number of terminating process.
+        int num_terminating_processes= 0;
+        for (int i = 0; i < num_processes; i++) {
+            if(process_table[i].status == 3) {
+                num_terminating_processes += 1;
+            }
+        }
+        printf("Total terminating process: %d\n", num_terminating_processes);
     }
     // If option is 4
     else if(option == '4'){
@@ -148,16 +157,28 @@ static void command_wait(char pid_str[]) {
 }
 
 
-static void command_terminate(/* pass necessary parameters*/) {
+static void command_terminate(char pid_str[]) {
 
-        /******* FILL IN THE CODE *******/
+    /******* FILL IN THE CODE *******/
+    pid_t pid = (pid_t)atoi(pid_str);
+    int status;
 
     // Find the pid in the PCBTable
-    // If {PID} is RUNNING:
+    for (int i = 0; i < num_processes; i++) {
+        if (process_table[i].pid == pid) {
+            struct PCBTable process = process_table[i];
+        // If {PID} is RUNNING:
         //Terminate it by using kill() to send SIGTERM
-        // The state of {PID} should be “Terminating” until {PID} exits
+        // The state of {PID} should be “Terminating” until {PID} exits            if(process.status == 2) {
+            process_table[i].status = 3;
+            kill(process_table[i].pid, SIGTERM);
+            } else{
 
+            }      
+        }
 }
+
+
 
 static void command_fg(/* pass necessary parameters*/) {
 
@@ -271,7 +292,10 @@ static void command(char command_str[],char *args[],int args_count,bool backgrou
         command_wait(args[1]);
 
     } else if (strcmp(command_str,"terminate") == 0){
-        
+        if(args_count <= 2){
+            return;
+        }
+        command_terminate(args[1]);
     } else if (strcmp(command_str,"fg") == 0){
         
     } else{
