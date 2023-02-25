@@ -262,7 +262,7 @@ static void command_exec(char program[],char *args[],int args_count,bool backgro
             int fd_err = open(error_file,  O_WRONLY | O_CREAT | O_TRUNC | O_SYNC,0644);
             // if it does not exist, create it
             if (fd_err == -1) {
-                int fd_out = open(error_file,  O_WRONLY | O_CREAT | O_TRUNC | O_SYNC,0644);
+                int fd_err = open(error_file,  O_WRONLY | O_CREAT | O_TRUNC | O_SYNC,0644);
             }
             dup2(fd_err, STDERR_FILENO);
             close(fd_err);
@@ -299,6 +299,9 @@ static void command_exec(char program[],char *args[],int args_count,bool backgro
             process_table[process_index].exitCode = status;
         }
 
+        reset_redirection_variables();
+
+
     }
 }
 
@@ -307,8 +310,6 @@ static void command_exec(char program[],char *args[],int args_count,bool backgro
  ******************************************************************************/
 
 static void command(char command_str[],char *args[],int args_count,bool background_task) {
-
-    reset_redirection_variables();
 
     /******* FILL IN THE CODE *******/
     // printf("command %s\n",command_str);
