@@ -22,6 +22,18 @@
 struct PCBTable process_table[100];
 int num_processes= 0;
 
+// REDIRECTION VARIABLES
+bool redirect_input = false, redirect_output = false, redirect_error = false;
+char* input_file = NULL, *output_file = NULL, *error_file = NULL;
+
+void reset_redirection_variables() {
+    redirect_input = false;
+    redirect_output = false;
+    redirect_error = false;
+    input_file = NULL;
+    output_file = NULL; 
+    error_file = NULL;
+}
 /*******************************************************************************
  * Signal handler : ex4
  ******************************************************************************/
@@ -223,13 +235,44 @@ static void command_exec(char program[],char *args[],int args_count,bool backgro
             // use fopen/open file to open the file for reading/writing with  permission O_RDONLY, O_WRONLY, O_CREAT, O_TRUNC, O_SYNC and 0644
             // use dup2 to redirect the stdin, stdout and stderr to the files
             // call execv() to execute the command in the child process
+        // Open input file if input redirection is required
+        if (redirect_input) {
+            int fd_in = open(input_file,  O_WRONLY | O_TRUNC | O_SYNC,0644);
+            if (access(input_file, F_OK) == -1) {
+                printf("%s does not exist\n", input_file);
+                exit(1);
+            }
+            dup2(fd_in, STDIN_FILENO);
+            close(fd_in);
+        }
+
+        // Open output file if output redirection is required
+        else if (redirect_output) {
+            int fd_out = open(output_file, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC,0644);
+            // if it does not exist, create it
+            if (fd_out == -1) {
+                int fd_out = open(output_file, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC,0644);
+            }
+            dup2(fd_out, STDOUT_FILENO);
+            close(fd_out);
+        }
+
+        // Open error file if error redirection is required
+        else if (redirect_error) {
+            int fd_err = open(error_file,  O_WRONLY | O_CREAT | O_TRUNC | O_SYNC,0644);
+            // if it does not exist, create it
+            if (fd_err == -1) {
+                int fd_out = open(error_file,  O_WRONLY | O_CREAT | O_TRUNC | O_SYNC,0644);
+            }
+            dup2(fd_err, STDERR_FILENO);
+            close(fd_err);
+        }
 
         // else : ex1, ex2 
         // call execv() to execute the command in the child process
         execv(program,args);
 
         // Exit the child
-        printf("HII");
         exit(0);
 
     } else {
@@ -270,7 +313,7 @@ static void command(char command_str[],char *args[],int args_count,bool backgrou
     // printf("command %s\n",command_str);
     // for (int i = 0; i < args_count; i++)
     // {
-    //     printf("args: %s\n", args[i]);
+    //     printf("args!!: %s\n", args[i]);
     // }
     
     // if command is "info" call command_info()             : ex1
@@ -333,31 +376,53 @@ void my_process_command(size_t num_tokens, char **tokens) {
         char **args = malloc(sizeof(char*) * 100);
         int args_count = 0; 
 
+        reset_redirection_variables();
+
         for (i = 0; i < num_tokens; i++) {
             token = tokens[i];
 
+            // if reached end of command
             if(token == NULL || strcmp(token, ";") == 0 || strcmp(token, "&") == 0 ){
                 args[args_count++] = NULL;
-
+                
                 if(token == NULL || strcmp(token, ";") == 0){
                     command(first_cmd_token,args,args_count,false);
+                 // if non-blocking '&'
                 } else {
                     command(first_cmd_token,args,args_count,true);
                     break;
                 }
+
                 // reset args and token
                 memset(args, '\0', sizeof(args)); // set all elements to null character ('\0')
 
                 // reset args and token
                 args_count = 0;
                 first_cmd_token = "";
-            } else{
-                if(!strcmp(first_cmd_token, "") == 0){
-                    args[args_count++] = token;
+
+            //forming the command
+            } else {
+                // redirection checks
+                if (strcmp(token, "<") == 0) {
+                    redirect_input = true;
+                    i++;
+                    input_file = tokens[i];
+                } else if (strcmp(token, ">") == 0) {
+                    redirect_output = true;
+                    i++;
+                    output_file = tokens[i];
+                } else if (strcmp(token, "2>") == 0) {
+                    redirect_error = true;
+                    i++;
+                    error_file = tokens[i];
                 } else {
-                    first_cmd_token = token;
-                    args[args_count++] = first_cmd_token;
-                }
+                    if(!strcmp(first_cmd_token, "") == 0){
+                        args[args_count++] = token;
+                    } else {
+                        first_cmd_token = token;
+                        args[args_count++] = first_cmd_token;
+                    }
+                } 
             }
         }
         free(args);
