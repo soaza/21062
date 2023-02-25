@@ -308,6 +308,7 @@ static void command_exec(char program[],char *args[],int args_count,bool backgro
 
 static void command(char command_str[],char *args[],int args_count,bool background_task) {
 
+    reset_redirection_variables();
 
     /******* FILL IN THE CODE *******/
     // printf("command %s\n",command_str);
@@ -375,8 +376,6 @@ void my_process_command(size_t num_tokens, char **tokens) {
         char *first_cmd_token="";
         char **args = malloc(sizeof(char*) * 100);
         int args_count = 0; 
-
-        reset_redirection_variables();
 
         for (i = 0; i < num_tokens; i++) {
             token = tokens[i];
